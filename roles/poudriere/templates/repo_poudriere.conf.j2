@@ -1,0 +1,11 @@
+poudriere: {
+#!!This url should point to the location on disk where our packages are stored 
+#!!and it should combines your jail name and port tree name with a dash.!!
+	url: "file:///usr/local/poudriere/data/packages/freebsd_11-1x64-HEAD",
+    mirror_type: "srv",
+    signature_type: "pubkey",
+    pubkey: {{ pkg_repo_signing_cert }},
+    enabled: yes,
+#!!you can set a priority here. This will cause our local repository to take priority over the official repositories.
+	#priority: 100
+}

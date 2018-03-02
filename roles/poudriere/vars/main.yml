@@ -1,0 +1,5 @@
+poudriere_url_base: "http://{{ poudriere_hostname  }}"
+pkg_repo_signing_key: "/usr/local/etc/ssl/keys/poudriere.key"
+nginx_server_name: "{{ ansible_eth0.ipv4.address  }}"
+nginx_listen_port: 80
+pkg_repo_signing_cert: "/usr/local/etc/ssl/certs/poudriere.cert"
