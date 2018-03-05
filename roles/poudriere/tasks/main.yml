@@ -114,30 +114,29 @@
 # We can pipe this output into sort to alphabetize the list to make it easier to find items. 
 # We can output the results to a file in the /usr/local/etc/poudriere.d directory. 
 # We will call this file port-list:
-- name: Output a list of explicitly installed ports
-  command: portmaster --list-origins | sort -d | tee /usr/local/etc/poudriere.d/port-list
-  become: true
+# - name: Output a list of explicitly installed ports
+#   command: portmaster --list-origins | sort -d | sudo tee /usr/local/etc/poudriere.d/port-list
+  
+# # If you use specific make.conf options to build your ports, you can create a make.conf file for each jail within your /usr/local/etc/poudriere.d directory.
+# # Inside, you can put any options you would like to use when building your ports.
+# - name: Create Poudriere jails 'make.conf' file
+#   copy: src=poudriere_make.conf dest=/usr/local/etc/poudriere.d/freebsd_11-1x64-make.conf
 
-# If you use specific make.conf options to build your ports, you can create a make.conf file for each jail within your /usr/local/etc/poudriere.d directory.
-# Inside, you can put any options you would like to use when building your ports.
-- name: Create Poudriere jails 'make.conf' file
-  copy: src=poudriere_make.conf dest=/usr/local/etc/poudriere.d/freebsd_11-1x64-make.conf
-
-#Creates 
-- name: Create '/usr/local/etc/poudriere.d/freebsd_10-1x64-options' dir
-  file: path=/usr/local/etc/poudriere.d/freebsd_11-1-options state=directory
+# #Creates 
+# - name: Create '/usr/local/etc/poudriere.d/freebsd_10-1x64-options' dir
+#   file: path=/usr/local/etc/poudriere.d/freebsd_11-1-options state=directory
   
 
-# We can copy the options we have already been using on our host system by typing:
-# - name: Copy the options
-#   command: cp -r /var/db/ports/* /usr/local/etc/poudriere.d/freebsd_11-1-options
-#   ignore_errors: yes
-#   become: true
+# # We can copy the options we have already been using on our host system by typing:
+# # - name: Copy the options
+# #   command: cp -r /var/db/ports/* /usr/local/etc/poudriere.d/freebsd_11-1-options
+# #   ignore_errors: yes
+# #   become: true
 
-# We can configure anything which has not been already configured using the options command.
-# We should pass in both the port tree we created (using the -p option) 
-#and the jail we are setting these options for (using the -j option). 
-# We also must specify the list of ports we want to configure using the -f option.
+# # We can configure anything which has not been already configured using the options command.
+# # We should pass in both the port tree we created (using the -p option) 
+# #and the jail we are setting these options for (using the -j option). 
+# # We also must specify the list of ports we want to configure using the -f option.
 # - name: Configure anything which has not been already configured
 #   command: poudriere options -j freebsd_11-1x64 -p HEAD -f /usr/local/etc/poudriere.d/port-list
 #   become: true
