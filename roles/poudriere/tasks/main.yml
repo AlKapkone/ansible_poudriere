@@ -81,7 +81,7 @@
 
 
 #To update jail
-- name: Update ports tree
+- name: Update jail
   # command: poudriere jail -u -j {{ item.item.name }}{{ item.item.architecture }}
   command: poudriere jail -u -j freebsd_11-1x64
   when: create_jails|succeeded
@@ -129,102 +129,102 @@
   
 
 # We can copy the options we have already been using on our host system by typing:
-- name: Copy the options
-  command: cp -r /var/db/ports/* /usr/local/etc/poudriere.d/freebsd_11-1-options
-  ignore_errors: yes
-  become: true
+# - name: Copy the options
+#   command: cp -r /var/db/ports/* /usr/local/etc/poudriere.d/freebsd_11-1-options
+#   ignore_errors: yes
+#   become: true
 
 # We can configure anything which has not been already configured using the options command.
 # We should pass in both the port tree we created (using the -p option) 
 #and the jail we are setting these options for (using the -j option). 
 # We also must specify the list of ports we want to configure using the -f option.
-- name: Configure anything which has not been already configured
-  command: poudriere options -j freebsd_11-1x64 -p HEAD -f /usr/local/etc/poudriere.d/port-list
-  become: true
-##xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx##
+# - name: Configure anything which has not been already configured
+#   command: poudriere options -j freebsd_11-1x64 -p HEAD -f /usr/local/etc/poudriere.d/port-list
+#   become: true
+# ##xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx##
 
 
-##=================Building the Ports==========================##
-# We can kick off the bulk build process.
+# ##=================Building the Ports==========================##
+# # We can kick off the bulk build process.
 
-# To start the build, we just need to use the bulk command 
-#and point to all of our individual pieces that we have been configuring.
-- name: Building the Ports
-  command: poudriere bulk -j freebsd_11-1x64 -p HEAD -f /usr/local/etc/poudriere.d/port-list
-  become: true
-##xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx##
-
-
-##====Setting Up Nginx to Serve the Front End and Repository====##
-# Enable Nginx service by adding line to the /etc/rc.conf file.
-- name: Enable Nginx service
-  command: sh -c "echo 'nginx_enable=\"YES\"' >> /etc/rc.conf"
-  become: true
-
-# Create 'nginx.conf' file from templates folder
-- name: Create 'nginx.conf' file
-  template: src=nginx.conf.j2 dest=/usr/local/etc/nginx/nginx.conf
+# # To start the build, we just need to use the bulk command 
+# #and point to all of our individual pieces that we have been configuring.
+# - name: Building the Ports
+#   command: poudriere bulk -j freebsd_11-1x64 -p HEAD -f /usr/local/etc/poudriere.d/port-list
+#   become: true
+# ##xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx##
 
 
-- name: Edit the Nginx mime.types file
-  replace:
-    dest: /usr/local/etc/nginx/mime.types
-    regexp:  '    text/plain                            txt;'
-    replace: '    text/plain                            txt log;'
+# ##====Setting Up Nginx to Serve the Front End and Repository====##
+# # Enable Nginx service by adding line to the /etc/rc.conf file.
+# - name: Enable Nginx service
+#   command: sh -c "echo 'nginx_enable=\"YES\"' >> /etc/rc.conf"
+#   become: true
+
+# # Create 'nginx.conf' file from templates folder
+# - name: Create 'nginx.conf' file
+#   template: src=nginx.conf.j2 dest=/usr/local/etc/nginx/nginx.conf
 
 
-- name: Check the syntax of your configuration files
-  command: service nginx configtest
-  become: true
-
-# If your configuration test reports no syntax errors, start Nginx by typing:
-- name: Start Nginx
-  command: service nginx start
-  become: true
-##xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx##
+# - name: Edit the Nginx mime.types file
+#   replace:
+#     dest: /usr/local/etc/nginx/mime.types
+#     regexp:  '    text/plain                            txt;'
+#     replace: '    text/plain                            txt log;'
 
 
-##===Configuring the Build Server to Use Its Own Package Repo===##
+# - name: Check the syntax of your configuration files
+#   command: service nginx configtest
+#   become: true
 
-# First, we need to make a directory to hold our repository configuration files:
-- name: Create '/usr/local/etc/pkg/repos' dir
-  file: path=/usr/local/etc/pkg/repos state=directory
-  register: repos_dir
-
-
-#Inside this directory, we can create our repository configuration file
-#where we will point to the location on disk where our packages are stored.
-#!!This should be a directory that combines your jail name and port tree name with a dash.!!
-- name: Create 'poudriere.conf' file
-  template: src=repo_poudriere.conf.j2 dest=/usr/local/etc/pkg/repos/poudriere.conf
-  when: repos_dir|success
-
-#!!!!!!!!!!OPTIONAL!!!!!!!!!!!#
-#If you chose only to install packages that !!you have custom built yourself!! (the safer route), 
-#you can disable the default repositories. 
-#You can do this by creating a different repo file that overrides the default repository file and disables it:
-- name: Create 'freebsd.conf' file that overrides the default repository
-  template: src=freebsd.conf.j2 dest=/usr/local/etc/pkg/repos/freebsd.conf
-#!!!!!!!!!!OPTIONAL!!!!!!!!!!!#
+# # If your configuration test reports no syntax errors, start Nginx by typing:
+# - name: Start Nginx
+#   command: service nginx start
+#   become: true
+# ##xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx##
 
 
-# Update your package list by typing:
-- name: Update package list
-  command: pkg update
-  become: true
-#!!Now, your server can use the pkg command to install packages from your local repository!!
+# ##===Configuring the Build Server to Use Its Own Package Repo===##
+
+# # First, we need to make a directory to hold our repository configuration files:
+# - name: Create '/usr/local/etc/pkg/repos' dir
+#   file: path=/usr/local/etc/pkg/repos state=directory
+#   register: repos_dir
 
 
-##==Preconfiguring Remote Clients to Use Custom Build Machine's Repository==##
-# OpenSSL comes with an SSH agent that can be started by typing:
-- name: Start SSH agent
-  command: eval $(ssh-agent)
+# #Inside this directory, we can create our repository configuration file
+# #where we will point to the location on disk where our packages are stored.
+# #!!This should be a directory that combines your jail name and port tree name with a dash.!!
+# - name: Create 'poudriere.conf' file
+#   template: src=repo_poudriere.conf.j2 dest=/usr/local/etc/pkg/repos/poudriere.conf
+#   when: repos_dir|success
 
-# Next, we will need to add our SSH key to it by typing:
-- name: Update
-  command: ssh-add
+# #!!!!!!!!!!OPTIONAL!!!!!!!!!!!#
+# #If you chose only to install packages that !!you have custom built yourself!! (the safer route), 
+# #you can disable the default repositories. 
+# #You can do this by creating a different repo file that overrides the default repository file and disables it:
+# - name: Create 'freebsd.conf' file that overrides the default repository
+#   template: src=freebsd.conf.j2 dest=/usr/local/etc/pkg/repos/freebsd.conf
+# #!!!!!!!!!!OPTIONAL!!!!!!!!!!!#
 
-# We can kick off the bulk build process.
-- name: Update
-  command: ssh -A freebsd@client_domain_or_IP
-##xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx##
+
+# # Update your package list by typing:
+# - name: Update package list
+#   command: pkg update
+#   become: true
+# #!!Now, your server can use the pkg command to install packages from your local repository!!
+
+
+# ##==Preconfiguring Remote Clients to Use Custom Build Machine's Repository==##
+# # OpenSSL comes with an SSH agent that can be started by typing:
+# - name: Start SSH agent
+#   command: eval $(ssh-agent)
+
+# # Next, we will need to add our SSH key to it by typing:
+# - name: Update
+#   command: ssh-add
+
+# # We can kick off the bulk build process.
+# - name: Update
+#   command: ssh -A freebsd@client_domain_or_IP
+# ##xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx##
