@@ -139,7 +139,8 @@
 #and the jail we are setting these options for (using the -j option). 
 # We also must specify the list of ports we want to configure using the -f option.
 - name: Configure anything which has not been already configured
-  command: sudo poudriere options -j freebsd_11-1x64 -p HEAD -f /usr/local/etc/poudriere.d/port-list
+  command: poudriere options -j freebsd_11-1x64 -p HEAD -f /usr/local/etc/poudriere.d/port-list
+  become: true
 ##xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx##
 
 
@@ -149,15 +150,16 @@
 # To start the build, we just need to use the bulk command 
 #and point to all of our individual pieces that we have been configuring.
 - name: Building the Ports
-  command: sudo poudriere bulk -j freebsd_11-1x64 -p HEAD -f /usr/local/etc/poudriere.d/port-list
+  command: poudriere bulk -j freebsd_11-1x64 -p HEAD -f /usr/local/etc/poudriere.d/port-list
+  become: true
 ##xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx##
 
 
 ##====Setting Up Nginx to Serve the Front End and Repository====##
 # Enable Nginx service by adding line to the /etc/rc.conf file.
 - name: Enable Nginx service
-  command: sudo sh -c "echo 'nginx_enable=\"YES\"' >> /etc/rc.conf"
-  
+  command: sh -c "echo 'nginx_enable=\"YES\"' >> /etc/rc.conf"
+  become: true
 
 # Create 'nginx.conf' file from templates folder
 - name: Create 'nginx.conf' file
@@ -172,12 +174,13 @@
 
 
 - name: Check the syntax of your configuration files
-  command: sudo service nginx configtest
-
+  command: service nginx configtest
+  become: true
 
 # If your configuration test reports no syntax errors, start Nginx by typing:
 - name: Start Nginx
-  command: sudo service nginx start
+  command: service nginx start
+  become: true
 ##xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx##
 
 
@@ -207,7 +210,8 @@
 
 # Update your package list by typing:
 - name: Update package list
-  command: sudo pkg update
+  command: pkg update
+  become: true
 #!!Now, your server can use the pkg command to install packages from your local repository!!
 
 
