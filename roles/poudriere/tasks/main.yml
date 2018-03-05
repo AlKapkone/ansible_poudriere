@@ -16,8 +16,10 @@
 ##===============Create an SSL Certificate and Key======================##
 #We will ensure that we have an ssl directory that contains two subdirectories called keys and certs. 
 - name:    Creates on ssl directory two subdirectories called keys and certs
-  command: sudo mkdir -p /usr/local/etc/ssl/{keys,certs}
+  command: sudo mkdir -p /usr/local/etc/ssl/keys
 
+- name:    Creates on ssl directory two subdirectories called keys and certs
+  command: sudo mkdir -p /usr/local/etc/ssl/certs
 
 # We can lock down the directory so that users without root or sudo privileges 
 #will be unable to interact with the directory or its contents: 
@@ -34,7 +36,7 @@
 # After the key is generated, we can create a public cert from it by typing:
 - name:    Chmod /usr/local/etc/ssl/keys
   command: sudo openssl rsa -in /usr/local/etc/ssl/keys/poudriere.key -pubout -out /usr/local/etc/ssl/certs/poudriere.cert
-# We now have the SSL components we need to sign packages and verify the signatures.
+#We now have the SSL components we need to sign packages and verify the signatures.
 ##xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx##
 
 
