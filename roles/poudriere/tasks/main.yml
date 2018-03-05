@@ -29,15 +29,16 @@
 #   become: true
 
 #We will ensure that we have an ssl directory that contains two subdirectories called keys and certs.
-- name: Creates directory
+- name: Create keys directory
   file: 
-    path: '/usr/local/etc/ssl/{{ item.path }}'
+    path: /usr/local/etc/ssl/keys
     state: directory
     mode: 0600
-  with_items:
-    - { path: 'keys' }
-    - { path: 'certs' }
 
+- name: Create certs directory
+  file: 
+    path: /usr/local/etc/ssl/certs
+    state: directory
 
 # We can lock down the directory so that users without root or sudo privileges 
 #will be unable to interact with the directory or its contents: 
@@ -82,7 +83,6 @@
 - name: Update ports tree
   # command: poudriere jail -u -j {{ item.item.name }}{{ item.item.architecture }}
   command: poudriere jail -u -j freebsd_11-1x64
-  with_items: create_jails.results
   when: create_jails|succeeded
   become: true
 
@@ -114,30 +114,25 @@
 # We can output the results to a file in the /usr/local/etc/poudriere.d directory. 
 # We will call this file port-list:
 - name: Output a list of explicitly installed ports
-  command: portmaster --list-origins | sort -d | sudo tee {{ item.port_list_dir }}
-  with_items:
-  - { port_list_dir: '/usr/local/etc/poudriere.d/port-list' }
-  register: list_of_installed_ports
+  command: portmaster --list-origins | sort -d | sudo tee /usr/local/etc/poudriere.d/port-list
 
 
 # If you use specific make.conf options to build your ports, you can create a make.conf file for each jail within your /usr/local/etc/poudriere.d directory.
 # Inside, you can put any options you would like to use when building your ports.
 - name: Create Poudriere jails 'make.conf' file
-  copy: src=poudriere_make.conf dest=/usr/local/etc/poudriere.d/{{ item.item.name }}{{ item.item.architecture }}-make.conf
+  copy: src=poudriere_make.conf dest=/usr/local/etc/poudriere.d/freebsd_11-1x64-make.conf
   with_items: create_jails.results
 
 
 #Creates 
 - name: Create '/usr/local/etc/poudriere.d/freebsd_10-1x64-options' dir
-  file: path=/usr/local/etc/poudriere.d/{{ item.item.name }}-options state=directory
-  with_items: create_jails.results
+  file: path=/usr/local/etc/poudriere.d/freebsd_11-1-options state=directory
   register: options_dir
 
 
 # We can copy the options we have already been using on our host system by typing:
 - name: Copy the options
-  copy: sudo cp -r /var/db/ports/* /usr/local/etc/poudriere.d/{{ item.item.name }}-options
-  with_items: create_jails.results
+  copy: sudo cp -r /var/db/ports/* /usr/local/etc/poudriere.d/freebsd_11-1-options
   when: options_dir | success
   
 # We can configure anything which has not been already configured using the options command.
@@ -145,10 +140,7 @@
 #and the jail we are setting these options for (using the -j option). 
 # We also must specify the list of ports we want to configure using the -f option.
 - name: Configure anything which has not been already configured
-  copy: sudo poudriere options -j {{ item.item.name }}{{ item.item.architecture }} -p HEAD -f {{ item.item.port_list_dir }}
-  with_items:
-    - create_jails.results
-    - list_of_installed_ports.results
+  copy: sudo poudriere options -j freebsd_11-1x64 -p HEAD -f /usr/local/etc/poudriere.d/port-list
   register: opt_result
 ##xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx##
 
@@ -159,10 +151,7 @@
 # To start the build, we just need to use the bulk command 
 #and point to all of our individual pieces that we have been configuring.
 - name: Building the Ports
-  copy: sudo poudriere bulk -j {{ item.item.name }}{{ item.item.architecture }} -p HEAD -f {{ item.item.port_list_dir }}
-  with_items:
-    - create_jails.results
-    - list_of_installed_ports.results
+  copy: sudo poudriere bulk -j freebsd_11-1x64 -p HEAD -f /usr/local/etc/poudriere.d/port-list
   when: opt_result|succeeded
 ##xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx##
 
