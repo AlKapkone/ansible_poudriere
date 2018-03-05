@@ -15,19 +15,36 @@
 
 ##===============Create an SSL Certificate and Key======================##
 #We will ensure that we have an ssl directory that contains two subdirectories called keys and certs. 
-- name: Creates certs subdirectory
-  command: mkdir -p /usr/local/etc/ssl/keys
-  become: true
+# - name: Creates certs subdirectory
+#   command: mkdir -p /usr/local/etc/ssl/keys
+#   become: true
 
-- name: Creates certs subdirectory
-  command: mkdir -p /usr/local/etc/ssl/certs
-  become: true
+# - file:
+#     path: /usr/local/etc/ssl/keys
+#     mode: 0600
+#     become: true
+
+# - name: Creates certs subdirectory
+#   command: mkdir -p /usr/local/etc/ssl/certs
+#   become: true
+
+#We will ensure that we have an ssl directory that contains two subdirectories called keys and certs.
+- name: Creates directory
+  file: 
+    path: '/usr/local/etc/ssl/{{ item.path }}'
+    state: directory
+    mode: 0600
+    become: true
+  with_items:
+    - { path: 'keys' }
+    - { path: 'certs' }
+
 
 # We can lock down the directory so that users without root or sudo privileges 
 #will be unable to interact with the directory or its contents: 
-- name: Chmod /usr/local/etc/ssl/keys
-  command: chmod 0600 /usr/local/etc/ssl/keys
-  become: true
+# - name: Chmod /usr/local/etc/ssl/keys
+#   command: chmod 0600 /usr/local/etc/ssl/keys
+#   become: true
 
 # Next, we will generate a 4096 bit key called poudriere.key, 
 # and place it in our keys directory by typing:
@@ -64,7 +81,7 @@
 
 #To update jail
 - name: Update ports tree
-  command: poudriere jail -u -j {{ item.name }}{{ item.architecture }}
+  command: 'poudriere jail -u -j {{ item.item.name }}{{ item.item.architecture }}'
   with_items: create_jails.results
   when: create_jails|succeeded
   become: true
