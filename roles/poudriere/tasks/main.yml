@@ -15,27 +15,30 @@
 
 ##===============Create an SSL Certificate and Key======================##
 #We will ensure that we have an ssl directory that contains two subdirectories called keys and certs. 
-- name:    Creates on ssl directory two subdirectories called keys and certs
-  command: sudo mkdir -p /usr/local/etc/ssl/keys
+- name: Creates certs subdirectory
+  command: mkdir -p /usr/local/etc/ssl/keys
+  become: true
 
-- name:    Creates on ssl directory two subdirectories called keys and certs
-  command: sudo mkdir -p /usr/local/etc/ssl/certs
+- name: Creates certs subdirectory
+  command: mkdir -p /usr/local/etc/ssl/certs
+  become: true
 
 # We can lock down the directory so that users without root or sudo privileges 
 #will be unable to interact with the directory or its contents: 
-- name:    Chmod /usr/local/etc/ssl/keys
-  command: sudo chmod 0600 /usr/local/etc/ssl/keys
-
+- name: Chmod /usr/local/etc/ssl/keys
+  command: chmod 0600 /usr/local/etc/ssl/keys
+  become: true
 
 # Next, we will generate a 4096 bit key called poudriere.key, 
 # and place it in our keys directory by typing:
-- name:    Chmod /usr/local/etc/ssl/keys
-  command: sudo openssl genrsa -out /usr/local/etc/ssl/keys/poudriere.key 4096
-
+- name: Chmod /usr/local/etc/ssl/keys
+  command: openssl genrsa -out /usr/local/etc/ssl/keys/poudriere.key 4096
+  become: true
 
 # After the key is generated, we can create a public cert from it by typing:
-- name:    Chmod /usr/local/etc/ssl/keys
-  command: sudo openssl rsa -in /usr/local/etc/ssl/keys/poudriere.key -pubout -out /usr/local/etc/ssl/certs/poudriere.cert
+- name: Chmod /usr/local/etc/ssl/keys
+  command: openssl rsa -in /usr/local/etc/ssl/keys/poudriere.key -pubout -out /usr/local/etc/ssl/certs/poudriere.cert
+  become: true
 #We now have the SSL components we need to sign packages and verify the signatures.
 ##xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx##
 
@@ -50,43 +53,44 @@
 ##==============Creating the Build Environment==========================##
 
 #poudriere will build ports in an isolated environment using jails
-- name:    Create Poudriere jails
-  command: sudo poudriere jail -c -j {{ item.name }}{{ item.architecture }} -v {{ item.version }}
+- name: Create Poudriere jails
+  command: poudriere jail -c -j {{ item.name }}{{ item.architecture }} -v {{ item.version }}
   with_items:
   - { architecture: 'x64', version: '11.1-RELEASE', name: 'freebsd_11-1' }
   # - { architecture: 'x64', version: '10.1-RELEASE', name: 'freebsd_10-1' }
   register: create_jails
-
+  become: true
 #To update jail
-- name:       Update ports tree
-  command:    sudo poudriere jail -u -j {{ item.item.name }}{{ item.item.architecture }}
+- name: Update ports tree
+  command: poudriere jail -u -j {{ item.item.name }}{{ item.item.architecture }}
   with_items: create_jails.results
-  when:       create_jails|succeeded
-
+  when: create_jails|succeeded
+  become: true
 
 # We can use the -p flag to name our ports tree. We will call our tree "HEAD". 
 # We will be updating it regularly to match the most current version of the ports tree available:
 - name: Create Poudriere ports tree
-  command:       sudo poudriere ports -c -p HEAD
+  command: poudriere ports -c -p HEAD
   ignore_errors: yes
-  register:      result
+  register: result
+  become: true
 
 #To update your ports tree
-- name:    Update ports tree
-  command: sudo poudriere ports -u -p HEAD
-  when:    result|succeeded
-
+- name: Update ports tree
+  command: poudriere ports -u -p HEAD
+  when: result|succeeded
+  become: true
 
 #remove any unneeded dependencies from system to keep the port list as clean as possible.
-- name:    Remove unneeded dependencies
-  command: sudo pkg autoremove
-
+- name: Remove unneeded dependencies
+  command: pkg autoremove
+  become: true
 # The portmaster command can output a list of explicitly installed ports (not dependencies) 
 #in the correct format by using the --list-origins option.
 # We can pipe this output into sort to alphabetize the list to make it easier to find items. 
 # We can output the results to a file in the /usr/local/etc/poudriere.d directory. 
 # We will call this file port-list:
-- name:    Output a list of explicitly installed ports
+- name: Output a list of explicitly installed ports
   command: portmaster --list-origins | sort -d | sudo tee {{ item.port_list_dir }}
   with_items:
   - { port_list_dir: '/usr/local/etc/poudriere.d/port-list' }
@@ -101,9 +105,9 @@
 
 #Creates 
 - name: Create '/usr/local/etc/poudriere.d/freebsd_10-1x64-options' dir
-  file:       path=/usr/local/etc/poudriere.d/{{ item.item.name }}-options state=directory
+  file: path=/usr/local/etc/poudriere.d/{{ item.item.name }}-options state=directory
   with_items: create_jails.results
-  register:   options_dir
+  register: options_dir
 
 
 # We can copy the options we have already been using on our host system by typing:
@@ -156,12 +160,12 @@
     replace: '    text/plain                            txt log;'
 
 
-- name:    Check the syntax of your configuration files
+- name: Check the syntax of your configuration files
   command: sudo service nginx configtest
 
 
 # If your configuration test reports no syntax errors, start Nginx by typing:
-- name:    Start Nginx
+- name: Start Nginx
   command: sudo service nginx start
 ##xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx##
 
@@ -170,7 +174,7 @@
 
 # First, we need to make a directory to hold our repository configuration files:
 - name: Create '/usr/local/etc/pkg/repos' dir
-  file:     path=/usr/local/etc/pkg/repos state=directory
+  file: path=/usr/local/etc/pkg/repos state=directory
   register: repos_dir
 
 
@@ -190,21 +194,21 @@
 #!!!!!!!!!!OPTIONAL!!!!!!!!!!!#
 
 # Update your package list by typing:
-- name:    Update package list
+- name: Update package list
   command: sudo pkg update
 #!!Now, your server can use the pkg command to install packages from your local repository!!
 
 
 ##==Preconfiguring Remote Clients to Use Custom Build Machine's Repository==##
 # OpenSSL comes with an SSH agent that can be started by typing:
-- name:    Start SSH agent
+- name: Start SSH agent
   command: eval $(ssh-agent)
 
 # Next, we will need to add our SSH key to it by typing:
-- name:    Update
+- name: Update
   command: ssh-add
 
 # We can kick off the bulk build process.
-- name:    Update
+- name: Update
   command: ssh -A freebsd@client_domain_or_IP
 ##xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx##
