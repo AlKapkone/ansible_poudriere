@@ -125,21 +125,18 @@
 #Creates 
 - name: Create '/usr/local/etc/poudriere.d/freebsd_10-1x64-options' dir
   file: path=/usr/local/etc/poudriere.d/freebsd_11-1-options state=directory
-  register: options_dir
-
+  
 
 # We can copy the options we have already been using on our host system by typing:
 - name: Copy the options
   copy: sudo cp -r /var/db/ports/* /usr/local/etc/poudriere.d/freebsd_11-1-options
-  when: options_dir|success
-  
+    
 # We can configure anything which has not been already configured using the options command.
 # We should pass in both the port tree we created (using the -p option) 
 #and the jail we are setting these options for (using the -j option). 
 # We also must specify the list of ports we want to configure using the -f option.
 - name: Configure anything which has not been already configured
   copy: sudo poudriere options -j freebsd_11-1x64 -p HEAD -f /usr/local/etc/poudriere.d/port-list
-  register: opt_result
 ##xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx##
 
 
@@ -150,7 +147,6 @@
 #and point to all of our individual pieces that we have been configuring.
 - name: Building the Ports
   copy: sudo poudriere bulk -j freebsd_11-1x64 -p HEAD -f /usr/local/etc/poudriere.d/port-list
-  when: opt_result|succeeded
 ##xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx##
 
 
