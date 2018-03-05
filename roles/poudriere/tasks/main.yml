@@ -34,7 +34,6 @@
     path: '/usr/local/etc/ssl/{{ item.path }}'
     state: directory
     mode: 0600
-    become: true
   with_items:
     - { path: 'keys' }
     - { path: 'certs' }
