@@ -80,7 +80,8 @@
 
 #To update jail
 - name: Update ports tree
-  command: 'poudriere jail -u -j {{ item.item.name }}{{ item.item.architecture }}'
+  # command: poudriere jail -u -j {{ item.item.name }}{{ item.item.architecture }}
+  command: poudriere jail -u -j freebsd_11-1x64
   with_items: create_jails.results
   when: create_jails|succeeded
   become: true
