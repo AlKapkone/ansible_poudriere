@@ -1,5 +1,5 @@
-poudriere_url_base: "http://10.128.46.102/"
+poudriere_url_base: "http://10.128.46.100/"
 pkg_repo_signing_key: "/usr/local/etc/ssl/keys/poudriere.key"
-nginx_server_name: "http://10.128.46.102/"
+nginx_server_name: "http://10.128.46.100/"
 nginx_listen_port: 80
 pkg_repo_signing_cert: "/usr/local/etc/ssl/certs/poudriere.cert"
