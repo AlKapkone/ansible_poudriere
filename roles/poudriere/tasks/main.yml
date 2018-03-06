@@ -13,13 +13,13 @@
 #   - dialog4ports
 
 # Install packages poudriere, nginx and portmaster using PORTS
+- name: Install packages
+  command: cd /usr/ports/ports-mgmt/poudriere && make install clean BATCH=yes
+- name: Install packages
+  command: cd /usr/ports/ports-mgmt/portmaster && make install clean BATCH=yes
 
-- name: add several users
-  command: cd /usr/ports/{{ item.port_name }} && make install clean BATCH=yes
-  with_items:
-    - { port_name: 'ports-mgmt/poudriere' }
-    - { port_name: 'ports-mgmt/portmaster' }
-    - { port_name: 'www/nginx' }   
+- name: Install packages
+  command: cd /usr/ports/www/nginx && make install clean BATCH=yes 
 ##xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx##
 
 
