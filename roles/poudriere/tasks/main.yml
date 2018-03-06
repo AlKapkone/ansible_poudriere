@@ -11,17 +11,7 @@
 #   - portmaster
 #   - nginx
 #   - dialog4ports
-
-# Install packages poudriere, nginx and portmaster using PORTS
-- name: Install poudriere
-  command: cd /usr/ports/ports-mgmt/poudriere && make install clean BATCH="yes"
-
-- name: Install portmaster
-  command: cd /usr/ports/ports-mgmt/portmaster && make install clean BATCH="yes"
-
-- name: Install nginx
-  command: cd /usr/ports/www/nginx && make install clean BATCH="yes"
-##xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx##
+#xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx##
 
 
 ##===============Create an SSL Certificate and Key======================##
