@@ -4,12 +4,12 @@
 ##======================Install packages==============================##
 
 # Extract the ports tree files into /usr/ports
-- name: Generate a 4096 bit key
-  command: portsnap fetch extract
-  become: true
+# - name: portsnap fetch extract
+#   command: portsnap fetch extract
+#   become: true
 
 #If you already have the ports tree downloaded, instead you should update it with:
-- name: Generate a 4096 bit key
+- name: portsnap fetch update
   command: portsnap fetch update
   become: true
 
