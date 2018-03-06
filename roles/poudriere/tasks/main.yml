@@ -3,16 +3,6 @@
 
 ##======================Install packages==============================##
 
-# Extract the ports tree files into /usr/ports
-# - name: portsnap fetch extract
-#   command: portsnap fetch extract
-#   become: true
-
-#If you already have the ports tree downloaded, instead you should update it with:
-- name: portsnap fetch update
-  command: portsnap fetch update
-  become: true
-
 # # Install packages poudriere, nginx, portmaster using PACKAGES
 # - name:  Install required packages
 #   pkgng: name={{ item }} state=present
