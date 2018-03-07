@@ -78,7 +78,7 @@
 # We can output the results to a file in the /usr/local/etc/poudriere.d directory. 
 # We will call this file port-list:
 - name: Output a list of explicitly installed ports
-  command: portmaster --list-origins | sort -d | tee /usr/local/etc/poudriere.d/port-list
+  command: portmaster --list-origins | tee /usr/local/etc/poudriere.d/port-list
   become: true
 
 # If you use specific make.conf options to build your ports, you can create a make.conf file for each jail within your /usr/local/etc/poudriere.d directory.
@@ -91,11 +91,11 @@
   file: path=/usr/local/etc/poudriere.d/freebsd_11-1-options state=directory
   
 
-# We can copy the options we have already been using on our host system by typing:
-- name: Copy the options
-  command: cp -r /var/db/ports/* /usr/local/etc/poudriere.d/freebsd_11-1-options
-  ignore_errors: yes
-  become: true
+# !!!OPTIONAL!!! We can copy the options we have already been using on our host system by typing:
+# - name: Copy the options
+#   command: cp -r /var/db/ports/* /usr/local/etc/poudriere.d/freebsd_11-1-options
+#   ignore_errors: yes
+#   become: true
 
 # We can configure anything which has not been already configured using the options command.
 # We should pass in both the port tree we created (using the -p option) 
