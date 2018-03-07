@@ -15,20 +15,6 @@
 
 
 ##===============Create an SSL Certificate and Key======================##
-#We will ensure that we have an ssl directory that contains two subdirectories called keys and certs. 
-- name: Creates certs subdirectory
-  command: mkdir -p /usr/local/etc/ssl/keys
-  become: true
-
-- file:
-    path: /usr/local/etc/ssl/keys
-    mode: 0600
-    become: true
-
-- name: Creates certs subdirectory
-  command: mkdir -p /usr/local/etc/ssl/certs
-  become: true
-
 #We will ensure that we have an ssl directory that contains two subdirectories called keys and certs.
 - name: Create keys directory
   file: 
