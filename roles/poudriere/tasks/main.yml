@@ -77,9 +77,9 @@
 # We can pipe this output into sort to alphabetize the list to make it easier to find items. 
 # We can output the results to a file in the /usr/local/etc/poudriere.d directory. 
 # We will call this file port-list:
-- name: Output a list of explicitly installed ports
-  command: portmaster --list-origins | tee /usr/local/etc/poudriere.d/port-list
-  become: true
+# - name: Output a list of explicitly installed ports
+#   command: portmaster --list-origins | tee /usr/local/etc/poudriere.d/port-list
+#   become: true
 
 # If you use specific make.conf options to build your ports, you can create a make.conf file for each jail within your /usr/local/etc/poudriere.d directory.
 # Inside, you can put any options you would like to use when building your ports.
